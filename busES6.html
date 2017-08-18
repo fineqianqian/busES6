@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script type="text/javascript" src="jquery.min.js"></script>
+    <script type="text/javascript" src="template-web.js"></script>
+    <script type="text/javascript">
+    function send() {
+
+
+
+        var p1 = new Promise(function(resolve, reject) {
+            $.ajax({
+                type: "get",
+                url: "http://op.juhe.cn/189/bus/busline",
+                data: {
+                    key: "0d7638b6605e131b22b750bf2fe56a2a",
+                    city: $("#city").val(),
+                    bus: $("#bus").val()
+
+
+
+
+
+                },
+                dataType: "jsonp",
+                success: function(data) {
+                    if (data.reason == 'success') {
+                        resolve(data);
+                    } else {
+                        // console.log("请求失败");
+                        reject("请求失败1");
+                    }
+                }
+            });
+        });
+        var p2 = new Promise(function(resolve, reject) {
+            $.ajax({
+                type: "get",
+                url: "http://v.juhe.cn/weather/index",
+                data: {
+                    key: "7117b260fa210b2216fea0a1e00058d0",
+                    cityname: $("#city").val()
+
+                },
+                dataType: "jsonp",
+                success: function(data) {
+                    if (data.resultcode == 200) {
+                        // console.log(data);
+                        resolve(data);
+                    } else {
+                        // console.log("请求失败");
+                        reject("请求失败2");
+                    }
+                }
+            });
+        });
+
+        // 将两个异步请求结果合并成一个
+        var newPromise = Promise.all([p1, p2]);
+        newPromise.then(function([result1, result2]) {
+
+            console.log(result1);
+            console.log(result1.result);
+            var newArray = [];
+            newArray = newArray.concat(result1.result);
+            newArray = newArray.concat(result2.result.today);
+            console.log(newArray);
+            var str = template("test",result1);
+            $("#show").html(str);
+        /*    var str2 = template("test2",result1);
+            $("#show").html(str2);*/
+
+
+
+
+
+        }).catch(function(reason) {
+            console.log(reason);
+        });
+
+
+
+
+    }
+    </script>
+    <script type="text/html" id="test">
+           {{each result v}} 
+        <div  class="busTitle">
+            <span><i>线路名字:</i>{{v.key_name}}</span>
+            <span><i>首发站:</i>{{v.front_name}}</span>
+            <span><i>终点站:</i>{{v.terminal_name}}</span>
+        </div>
+        <div class="busdiv">
+             {{each  v.stationdes val}}
+               <!--  <span>  {{val.name}}  </span> -->
+               <div>
+                   <span>{{val.name}}</span>
+                   <i>{{val.stationNum}}</i>
+               </div>
+             {{/each}}
+
+
+        </div>
+
+        {{/each}}
+
+
+
+
+
+    </script>
+    <title>Document</title>
+    <style>
+        .busdiv{
+            font-size:12px;
+        }
+        .busdiv > div{
+            display:inline-block;
+            margin-right: -6px;
+        }
+        .busdiv > div > i{
+            font-style: normal;
+            display: block;
+            padding: 5px 15px 5px 0;
+            height: 20px;
+            width: 20px;
+            line-height: 20px;
+            background: url('111.gif')  no-repeat left center;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+        .busdiv > div > span{
+            display: block;
+            width: 14px;
+            font-size: 14px;
+            color: #4c4c4c;
+            table-layout: fixed;
+            word-wrap: break-word;
+            word-break: break-all;
+            overflow: hidden;
+            text-align: center;
+            font-size: 14px;
+            color: #4c4c4c;
+            display: block;
+            padding: 0 0 2px 0;
+            margin: 0 9px 0 3px;
+            line-height: 17px;
+        }
+        .busTitle{
+            font-size:12px;
+            border-bottom:3px solid #4ba4d3;
+            border-top:3px solid #4ba4d3;
+        }
+        .busTitle i{
+            color:red;
+            font-style: normal;
+        }
+        .busTitle span{
+            display:block;
+            padding:0px 0px 4px 10px;
+        }
+    </style>
+</head>
+
+<body>
+  城市 ：  <input type="text" id="city">
+  公交线路：  <input name="bus" type="text" id="bus">
+    <input type="button" value="获取数据" onclick="send()">
+    <div id="show">
+
+    </div>
+</body>
+
+</html>
